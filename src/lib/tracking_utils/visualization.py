@@ -52,7 +52,7 @@ def plot_tracking(image, tlwhs, obj_ids, scores=None, frame_id=0, fps=0., ids2=N
         #cv2.putText(im, id_text, (intbox[0], intbox[1] + 30), cv2.FONT_HERSHEY_PLAIN, text_scale, (0, 0, 255),
         #            thickness=text_thickness)
         cv2.putText(im, id_text, (intbox[0], intbox[1] + 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255),
-                    thickness=2)
+                    thickness=4)
     return im
 
 
