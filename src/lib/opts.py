@@ -154,7 +154,7 @@ class opts(object):
    #added parameters
     self.parser.add_argument('--matching-threshold', type=float, default=0.7,
                               help='defualt matching threshold')
-    self.parser.add_argument('--lambda', type=float, default=0.98,
+    self.parser.add_argument('--lambda_', type=float, default=0.98,
                               help='lambda value for fusing motion and cosine distance')
 
   def parse(self, args=''):
