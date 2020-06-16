@@ -323,7 +323,7 @@ class JDETracker(object):
                         track.update(detections[idet], self.frame_id, occlution[idet])
                     else:
                         track.update(detections[idet], self.frame_id)
-                activated_starcks.append(track)
+                    activated_starcks.append(track)
             else:
                 track.re_activate(det, self.frame_id, new_id=False)
                 refind_stracks.append(track)
