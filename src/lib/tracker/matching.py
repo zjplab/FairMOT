@@ -133,12 +133,12 @@ def queue_embedding_distance(tracks, detections, opt, metric='cosine', occlution
     if opt.cos_method=="mean_before":
         track_features = np.asarray([np.mean(extractor(track.queue_features.queue)) for track in tracks], dtype=np.float)
         cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # Nomalized features
-    elif opt.cos_method=="mean after":
+    elif opt.cos_method=="mean_after":
         for i in range(len(tracks)):
             track_features=np.asarray(extractor(tracks[i].queue_features.queue),dtype=np.float)
             cost=np.maximum(.0, np.mean(cdist(track_features, det_features, metric), axis=0))
             cost_matrix[i, :] = cost
-    elif opt.cos_method=="min after":
+    elif opt.cos_method=="min_after":
             for i in range(len(tracks)):
                 track_features=np.asarray(extractor(tracks[i].queue_features.queue),dtype=np.float)
                 cost=np.maximum(.0, np.min(cdist(track_features, det_features, metric), axis=0))
