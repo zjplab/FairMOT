@@ -358,10 +358,10 @@ class JDETracker(object):
         dists = matching.iou_distance(unconfirmed, detections)
         matches, u_unconfirmed, u_detection = matching.linear_assignment(dists, thresh=0.7)
         for itracked, idet in matches:
-             if self.opt.queue_dist:
+            if self.opt.queue_dist:
                     unconfirmed[itracked].update(detections[idet], self.frame_id, occlution[idet])
-                else:
-                    unconfirmed[itracked].update(detections[idet], self.frame_id)
+            else:
+                unconfirmed[itracked].update(detections[idet], self.frame_id)
             activated_starcks.append(unconfirmed[itracked])
         for it in u_unconfirmed:
             track = unconfirmed[it]
