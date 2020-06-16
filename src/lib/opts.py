@@ -143,7 +143,7 @@ class opts(object):
                              help='feature dim for reid')
 
     self.parser.add_argument('--norm_wh', action='store_true',
-                             help='L1(\hat(y) / y, 1) or L1(\hat(y), y)')
+                             help=r'L1(\hat(y) / y, 1) or L1(\hat(y), y)')
     self.parser.add_argument('--dense_wh', action='store_true',
                              help='apply weighted regression near center or '
                                   'just apply regression on center point.')
@@ -156,6 +156,9 @@ class opts(object):
                               help='defualt matching threshold')
     self.parser.add_argument('--lambda_', type=float, default=0.98,
                               help='lambda value for fusing motion and cosine distance')
+    self.parser.add_argument('--queue_dist', action='store_true',
+                              help='use queue for most best features')
+    self.parser.add_argument('--cos_method', type=str, default="mean before", help="How to calculate cos distance with features list")
 
   def parse(self, args=''):
     if args == '':

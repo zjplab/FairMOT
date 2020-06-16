@@ -106,10 +106,55 @@ def embedding_distance(tracks, detections, metric='cosine'):
     cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # Nomalized features
     return cost_matrix
 
+def queue_embedding_distance(tracks, detections, opt, metric='cosine', occlution=None):
+    """
+    :param tracks: list[STrack]
+    :param detections: list[BaseTrack]
+    :param metric:
+    :return: cost_matrix np.ndarray
+
+    (occlution_percentage, feat) 
+    # top 20 mean
+    # cosine distance => occlution    ???
+    # det box's occulution? 
+    track.occulution_adjusted_smooth_feat
+    """
+
+    cost_matrix = np.zeros((len(tracks), len(detections)), dtype=np.float)
+    if cost_matrix.size == 0:
+        return cost_matrix 
+
+    #for all params settings, detection features stay the same
+    det_features = np.asarray([track.curr_feat for track in detections], dtype=np.float)
+    
+    #feature extractor from tuple
+    extractor=lambda L:[x[1] for x in L]
+    #however, track features are different based on parameters 
+    if opt.cos_method=="mean_before":
+        track_features = np.asarray([np.mean(extractor(track.queue_features.queue)) for track in tracks], dtype=np.float)
+        cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # Nomalized features
+    elif opt.cos_method=="mean after":
+        for i in range(len(tracks)):
+            track_features=np.asarray(extractor(tracks[i].queue_features.queue),dtype=np.float)
+            cost=np.maximum(.0, np.mean(cdist(track_features, det_features, metric), axis=0))
+            cost_matrix[i, :] = cost
+    elif opt.cos_method=="min after":
+            for i in range(len(tracks)):
+                track_features=np.asarray(extractor(tracks[i].queue_features.queue),dtype=np.float)
+                cost=np.maximum(.0, np.min(cdist(track_features, det_features, metric), axis=0))
+                cost_matrix[i, :] = cost
+    elif opt.cos_method.startswith('least'):
+        #least occlution means largest lamdba x:-x[0]
+        n = int(opt.cos_method[-2:])
+        track_features = np.asarray([np.mean(extractor(track.queue_features.nlargest(n))) for track in tracks], dtype=np.float)
+        cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # Nomalized features
+     
+    return cost_matrix
+
 
 def gate_cost_matrix(kf, cost_matrix, tracks, detections, only_position=False):
     if cost_matrix.size == 0:
-        return cost_matrix
+        return cost_matrix 
     gating_dim = 2 if only_position else 4
     gating_threshold = kalman_filter.chi2inv95[gating_dim]
     measurements = np.asarray([det.to_xyah() for det in detections])

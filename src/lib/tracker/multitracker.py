@@ -14,11 +14,12 @@ from tracking_utils.utils import *
 from utils.post_process import ctdet_post_process
 
 from .basetrack import BaseTrack, TrackState
-
+from tracking_utils.calculation import *
+from tracking_utils.dynamic_detection import *
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
-    def __init__(self, tlwh, score, temp_feat, buffer_size=30):
+    def __init__(self, tlwh, score, temp_feat, buffer_size=30, occlution=None):
 
         # wait activate
         self._tlwh = np.asarray(tlwh, dtype=np.float)
@@ -30,11 +31,13 @@ class STrack(BaseTrack):
         self.tracklet_len = 0
 
         self.smooth_feat = None
-        self.update_features(temp_feat)
+        self.update_features(temp_feat, occlution)
+        key=lambda x:-x[0]
+        self.queue_features = KeyPriorityQueue(key, maxLen=buffer_size)
         self.features = deque([], maxlen=buffer_size)
         self.alpha = 0.9
 
-    def update_features(self, feat):
+    def update_features(self, feat, occ=None):
         feat /= np.linalg.norm(feat)
         self.curr_feat = feat
         if self.smooth_feat is None:
@@ -42,6 +45,9 @@ class STrack(BaseTrack):
         else:
             self.smooth_feat = self.alpha * self.smooth_feat + (1 - self.alpha) * feat
         self.features.append(feat)
+        #occulution based features 
+        if occ is not None:
+            self.queue_features.put((occ, feat))
         self.smooth_feat /= np.linalg.norm(self.smooth_feat)
 
     def predict(self):
@@ -90,7 +96,7 @@ class STrack(BaseTrack):
         if new_id:
             self.track_id = self.next_id()
 
-    def update(self, new_track, frame_id, update_feature=True):
+    def update(self, new_track, frame_id, update_feature=True, occ=None):
         """
         Update a matched track
         :type new_track: STrack
@@ -109,7 +115,10 @@ class STrack(BaseTrack):
 
         self.score = new_track.score
         if update_feature:
-            self.update_features(new_track.curr_feat)
+            if occ is None:
+                self.update_features(new_track.curr_feat)
+            else:
+                self.update_feature(new_track.curr_feat, occ)
 
     @property
     # @jit(nopython=True)
@@ -271,8 +280,15 @@ class JDETracker(object):
 
         if len(dets) > 0:
             '''Detections'''
-            detections = [STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f, 30) for
-                          (tlbrs, f) in zip(dets[:, :5], id_feature)]
+            occlution = np.zeros(len(dets), len(dets))
+            for i in range(len(dets)):
+                for j in range(i+1, len(dets)):
+                    occ1, occ2= tlbr_occlution(dets[i,:4], dets[j, :4])
+                    occlution[i,j]=occ1
+                    occlution[j,i]=occ2
+            occlution=np.sum(occlution, axis=0)
+            detections = [STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f, 30, occ) for
+                          (tlbrs, f, occ) in zip(dets[:, :5], id_feature, occlution)]
         else:
             detections = []
 
@@ -291,7 +307,10 @@ class JDETracker(object):
         #for strack in strack_pool:
             #strack.predict()
         STrack.multi_predict(strack_pool)
-        dists = matching.embedding_distance(strack_pool, detections)
+        if self.opt.queue_dist:
+            dists=matching.queue_embedding_distance(strack_pool, detections, opt, occlution)
+        else:
+            dists = matching.embedding_distance(strack_pool, detections)
         #dists = matching.gate_cost_matrix(self.kalman_filter, dists, strack_pool, detections)
         dists = matching.fuse_motion(self.kalman_filter, dists, strack_pool, detections, lambda_=self.opt.lambda_)
         matches, u_track, u_detection = matching.linear_assignment(dists, thresh=self.opt.matching_threshold)
@@ -300,7 +319,10 @@ class JDETracker(object):
             track = strack_pool[itracked]
             det = detections[idet]
             if track.state == TrackState.Tracked:
-                track.update(detections[idet], self.frame_id)
+                    if self.opt.queue_dist:
+                        track.update(detections[idet], self.frame_id, occlution[idet])
+                    else:
+                        track.update(detections[idet], self.frame_id)
                 activated_starcks.append(track)
             else:
                 track.re_activate(det, self.frame_id, new_id=False)
@@ -316,7 +338,10 @@ class JDETracker(object):
             track = r_tracked_stracks[itracked]
             det = detections[idet]
             if track.state == TrackState.Tracked:
-                track.update(det, self.frame_id)
+                if self.opt.queue_dist:
+                    track.update(det, self.frame_id, occlution[idet])
+                else:
+                    track.update(det, self.frame_id)
                 activated_starcks.append(track)
             else:
                 track.re_activate(det, self.frame_id, new_id=False)
@@ -333,7 +358,10 @@ class JDETracker(object):
         dists = matching.iou_distance(unconfirmed, detections)
         matches, u_unconfirmed, u_detection = matching.linear_assignment(dists, thresh=0.7)
         for itracked, idet in matches:
-            unconfirmed[itracked].update(detections[idet], self.frame_id)
+             if self.opt.queue_dist:
+                    unconfirmed[itracked].update(detections[idet], self.frame_id, occlution[idet])
+                else:
+                    unconfirmed[itracked].update(detections[idet], self.frame_id)
             activated_starcks.append(unconfirmed[itracked])
         for it in u_unconfirmed:
             track = unconfirmed[it]
