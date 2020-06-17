@@ -1,6 +1,6 @@
 import numpy as np 
 
-def tlbr_occlution(tlbr, tlbr2):
+def tlbr_occlution(tlbr1, tlbr2):
     """(min x, min y, max x, max y)`, i.e.,
     `(top left, bottom right)`.
 
