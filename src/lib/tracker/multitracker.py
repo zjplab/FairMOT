@@ -258,9 +258,9 @@ class JDETracker(object):
             id_feature = _tranpose_and_gather_feat(id_feature, inds)
             id_feature = id_feature.squeeze(0)
             id_feature = id_feature.cpu().numpy()
-
-        dets = self.post_process(dets, meta)
-        dets = self.merge_outputs([dets])[1]
+        #torch.Size([1, 128, 6])
+        dets = self.post_process(dets, meta) #
+        dets = self.merge_outputs([dets])[1] #
 
         remain_inds = dets[:, 4] > self.opt.conf_thres
         dets = dets[remain_inds]
@@ -280,7 +280,7 @@ class JDETracker(object):
 
         if len(dets) > 0:
             '''Detections'''
-            occlution = np.zeros(len(dets), len(dets))
+            occlution = np.zeros(shape=(len(dets), len(dets)))
             for i in range(len(dets)):
                 for j in range(i+1, len(dets)):
                     occ1, occ2= tlbr_occlution(dets[i,:4], dets[j, :4])
