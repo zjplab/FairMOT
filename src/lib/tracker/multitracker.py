@@ -32,11 +32,11 @@ class STrack(BaseTrack):
         self.tracklet_len = 0
 
         self.smooth_feat = None
-        self.update_features(temp_feat, occlution)
         self.key=lambda x:-x[0]
         self.queue_features = KeyPriorityQueue(self.key, maxLen=buffer_size)
         self.features = deque([], maxlen=buffer_size)
         self.alpha = 0.9
+        self.update_features(temp_feat, occlution)
 
     def update_features(self, feat, occ=None):
         feat /= np.linalg.norm(feat)
@@ -309,7 +309,7 @@ class JDETracker(object):
             #strack.predict()
         STrack.multi_predict(strack_pool)
         if self.opt.queue_dist:
-            dists=matching.queue_embedding_distance(strack_pool, detections, opt, occlution)
+            dists=matching.queue_embedding_distance(strack_pool, detections, self.opt, occlution)
         else:
             dists = matching.embedding_distance(strack_pool, detections)
         #dists = matching.gate_cost_matrix(self.kalman_filter, dists, strack_pool, detections)
