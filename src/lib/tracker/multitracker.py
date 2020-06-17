@@ -14,8 +14,8 @@ from tracking_utils.utils import *
 from utils.post_process import ctdet_post_process
 
 from .basetrack import BaseTrack, TrackState
-from tracking_utils.calculation import *
-from tracking_utils.dynamic_detection import *
+from ..tracking_utils.calculation import *
+from ..tracking_utils.dynamic_detection import *
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
