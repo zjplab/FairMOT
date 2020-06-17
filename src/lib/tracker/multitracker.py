@@ -119,7 +119,7 @@ class STrack(BaseTrack):
             if occ is None:
                 self.update_features(new_track.curr_feat)
             else:
-                self.update_feature(new_track.curr_feat, occ)
+                self.update_features(new_track.curr_feat, occ)
 
     @property
     # @jit(nopython=True)
