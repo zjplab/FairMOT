@@ -15,7 +15,7 @@ from lib.utils.post_process import ctdet_post_process
 
 from lib.tracker.basetrack import BaseTrack, TrackState
 from lib.tracking_utils.calculation import *
-from lib.tracking_utils.dynamic_detection import *
+from lib.tracking_utils.dynamic_detection import KeyPriorityQueue
 
 
 class STrack(BaseTrack):
@@ -33,8 +33,8 @@ class STrack(BaseTrack):
 
         self.smooth_feat = None
         self.update_features(temp_feat, occlution)
-        key=lambda x:-x[0]
-        self.queue_features = KeyPriorityQueue(key, maxLen=buffer_size)
+        self.key=lambda x:-x[0]
+        self.queue_features = KeyPriorityQueue(self.key, maxLen=buffer_size)
         self.features = deque([], maxlen=buffer_size)
         self.alpha = 0.9
 

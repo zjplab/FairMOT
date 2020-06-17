@@ -19,6 +19,9 @@ class _Wrapper:
         return str(self.item)
 
 class KeyPriorityQueue:
+    '''
+    Custom Priority Queue with maximum length and custom type support
+    '''
     def __init__(self, key, maxLen):
         self.key = key
         self.queue=[]
