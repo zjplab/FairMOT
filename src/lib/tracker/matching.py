@@ -128,7 +128,7 @@ def queue_embedding_distance(tracks, detections, opt, metric='cosine', occlution
     det_features = np.asarray([track.curr_feat for track in detections], dtype=np.float)
     
     #feature extractor from tuple
-    extractor=lambda L:[x[1] for x in L]
+    extractor=lambda L:[x.item[1] for x in L]
     #however, track features are different based on parameters 
     if opt.cos_method=="mean_before":
         track_features = np.asarray([np.mean(extractor(track.queue_features.queue)) for track in tracks], dtype=np.float)
