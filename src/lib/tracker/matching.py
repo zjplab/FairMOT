@@ -131,7 +131,7 @@ def queue_embedding_distance(tracks, detections, opt, metric='cosine', occlution
     extractor=lambda L:[x.item[1] for x in L]
     #however, track features are different based on parameters 
     if opt.cos_method=="mean_before":
-        track_features = np.asarray([np.mean(extractor(track.queue_features.queue)) for track in tracks], dtype=np.float)
+        track_features = np.asarray([np.mean(extractor(track.queue_features.queue), axis=0) for track in tracks], dtype=np.float)
         cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # Nomalized features
     elif opt.cos_method=="mean_after":
         for i in range(len(tracks)):
@@ -146,7 +146,7 @@ def queue_embedding_distance(tracks, detections, opt, metric='cosine', occlution
     elif opt.cos_method.startswith('least'):
         #least occlution means largest lamdba x:-x[0]
         n = int(opt.cos_method[-2:])
-        track_features = np.asarray([np.mean(extractor(track.queue_features.nlargest(n))) for track in tracks], dtype=np.float)
+        track_features = np.asarray([np.mean(extractor(track.queue_features.nlargest(n)), axis=0) for track in tracks], dtype=np.float)
         cost_matrix = np.maximum(0.0, cdist(track_features, det_features, metric))  # Nomalized features
      
     return cost_matrix
