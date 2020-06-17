@@ -3,19 +3,19 @@ from collections import deque
 import numpy as np
 import torch
 import torch.nn.functional as F
-from models import *
-from models.decode import mot_decode
-from models.model import create_model, load_model
-from models.utils import _tranpose_and_gather_feat
-from tracker import matching
-from tracking_utils.kalman_filter import KalmanFilter
-from tracking_utils.log import logger
-from tracking_utils.utils import *
-from utils.post_process import ctdet_post_process
+from lib.models import *
+from lib.models.decode import mot_decode
+from lib.models.model import create_model, load_model
+from lib.models.utils import _tranpose_and_gather_feat
+from lib.tracker import matching
+from lib.tracking_utils.kalman_filter import KalmanFilter
+from lib.tracking_utils.log import logger
+from lib.tracking_utils.utils import *
+from lib.utils.post_process import ctdet_post_process
 
-from .basetrack import BaseTrack, TrackState
-from ..tracking_utils.calculation import *
-from ..tracking_utils.dynamic_detection import *
+from lib.tracker.basetrack import BaseTrack, TrackState
+from lib.tracking_utils.calculation import *
+from lib.tracking_utils.dynamic_detection import *
 
 class STrack(BaseTrack):
     shared_kalman = KalmanFilter()
