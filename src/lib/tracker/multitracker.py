@@ -309,7 +309,7 @@ class JDETracker(object):
             #strack.predict()
         STrack.multi_predict(strack_pool)
         if self.opt.queue_dist:
-            dists=matching.queue_embedding_distance(strack_pool, detections, self.opt,metric="cosine", occlution)
+            dists=matching.queue_embedding_distance(strack_pool, detections, self.opt,metric="cosine", occlution==occlution)
         else:
             dists = matching.embedding_distance(strack_pool, detections)
         #dists = matching.gate_cost_matrix(self.kalman_filter, dists, strack_pool, detections)
