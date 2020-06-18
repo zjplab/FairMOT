@@ -159,6 +159,8 @@ class opts(object):
     self.parser.add_argument('--queue_dist', action='store_true',
                               help='use queue for most best features')
     self.parser.add_argument('--cos_method', type=str, default="mean_before", help="How to calculate cos distance with features list")
+    self.parser.add_argument('--maxLen', type=int, default=30,
+                              help='default maximum age and max length for the queue features')
 
   def parse(self, args=''):
     if args == '':

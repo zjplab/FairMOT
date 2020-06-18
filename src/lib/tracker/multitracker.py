@@ -288,7 +288,7 @@ class JDETracker(object):
                     occlution[i,j]=occ1
                     occlution[j,i]=occ2
             occlution=np.sum(occlution, axis=0)
-            detections = [STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f, 30, occ) for
+            detections = [STrack(STrack.tlbr_to_tlwh(tlbrs[:4]), tlbrs[4], f, self.opt.maxLen, occ) for
                           (tlbrs, f, occ) in zip(dets[:, :5], id_feature, occlution)]
         else:
             detections = []
